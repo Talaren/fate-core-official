@@ -1,3 +1,37 @@
+# Version 4.1.12
+  * Minor tweak; shift-click menu on free invoke buttons for GMs will now only display a dialog if the current scene has aspects on it with free invokes.
+
+# Version 4.1.11
+  * Added options for aspect labels to have editable fill and border alpha settings.
+  * Fixed a bug that allowed aspect label font sizes of <8 and >256, which were invalid
+  * Added behaviour so that the drawing layer is automatically selected when you add an aspect to the scene.
+
+# Version 4.1.10
+  * Bugfix; prepareData was causing console errors for games with Things.
+  * New feature: Shift-clicking on the visibility toggle for a Countdown will cause the toggle to go backwards (from show boxes to hidden, from hidden to visible, from visible to show boxes)
+  * Fate Core glyph font added as a Font Family (Fate). You can edit anywhere that accepts HTML to use it for the overcome, defend etc. actions with A, O, D, and C like so:
+    <b style="font-family:Fate">O</b>
+    This will render with the Overcome symbol once you save the journal entry.
+    You can also render stress boxes with numbers 1 through 9, fate dice with +, - and 0, and a single stress box with b.
+
+# Version 4.1.9
+  * Added calculations in PrepareData so that any track with boxes can be presented as an attribute bar on a token.
+
+# Version 4.1.8
+  * Added max and value to prepareData method of fcoActor so that fate points can be presented as a resource bar.
+
+# Version 4.1.7
+  * Fixed a bug; the free plus2 and reroll buttons were not working on scenes where situation aspects had not yet been defined.
+
+# Version 4.1.6
+  * Fixed a bug; the full description, when marked and when recover values for tracks in the system track editor weren't populated immediately on changing track in the editor selection menu. 
+
+# Version 4.1.5
+  * Fixed a bug; track and aspect notes edited from a character sheet were not being saved until you closed the character sheet and re-opened it.
+
+# Version 4.1.4
+  * Added German language support thanks to https://github.com/Talaren
+
 # Version 4.1.3
   * Deleting a track category will now delete all tracks in that category... but you'll be asked first.
 

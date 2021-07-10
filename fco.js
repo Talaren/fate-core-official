@@ -332,6 +332,7 @@ Hooks.once('init', async function () {
     CONFIG.Item.documentClass = fcoExtra;
     CONFIG.fontFamilies.push("Montserrat");
     CONFIG.fontFamilies.push("Jost");
+    CONFIG.fontFamilies.push("Fate");
 
     //Let's initialise the settings at the system level.
     // ALL settings that might be relied upon later are now included here in order to prevent them from being unavailable later in the init hook.
@@ -913,6 +914,34 @@ game.settings.register("fate-core-official","freeStunts", {
             step: 1,
         },
         default:12
+    });
+
+    game.settings.register("fate-core-official", "fuAspectLabelBorderAlpha", {
+        name: game.i18n.localize("fate-core-official.aspectBorderAlpha"),
+        hint: game.i18n.localize("fate-core-official.AspectBorderAlphaLabel"),
+        scope: "world",
+        config: true,
+        type: Number,
+        range: {
+            min: 0,
+            max: 1,
+            step: 0.1,
+        },
+        default:1
+    });
+
+    game.settings.register("fate-core-official", "fuAspectLabelFillAlpha", {
+        name: game.i18n.localize("fate-core-official.aspectFillAlpha"),
+        hint: game.i18n.localize("fate-core-official.AspectFillAlphaLabel"),
+        scope: "world",
+        config: true,
+        type: Number,
+        range: {
+            min: 0,
+            max: 1,
+            step: 0.1,
+        },
+        default:1
     });
 
     game.settings.register("fate-core-official", "fuAspectLabelSize", {

@@ -549,6 +549,21 @@ export class fcoActor extends Actor {
         }
     }
 
+    prepareData(...args){
+        super.prepareData(...args);
+        if (this.type == "fate-core-official"){
+            this.data.data.details.fatePoints.max = this.data.data.details.fatePoints.refresh;
+            this.data.data.details.fatePoints.value = this.data.data.details.fatePoints.current;
+
+            let tracks = this.data.data.tracks;
+            for (let track in tracks){
+                if (tracks[track].box_values){
+                    this.data.data.details[track] = {max:tracks[track].box_values.length, value:tracks[track].box_values.length-tracks[track].box_values.filter(b => b).length};
+                }
+            }
+        }
+    }
+
     setupTracks (skills, tracks) {
         // This method takes skill and track data and returns corrected tracks enabled and disabled etc. according to the values of those skills
         // and the tracks' settings for enabling/disabling tracks according to skill ranks.

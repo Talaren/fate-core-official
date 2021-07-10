@@ -511,7 +511,9 @@ class FateUtilities extends Application{
             let size = game.settings.get("fate-core-official","fuAspectLabelSize");
             let font = CONFIG.fontFamilies[game.settings.get("fate-core-official","fuAspectLabelFont")];
             if (size === 0){
-                size = game.scenes.viewed.data.width*(1/100);
+                size = Math.floor(game.scenes.viewed.data.width*(1/100));
+                if (size < 8) size = 8;
+                if (size > 256) size = 256;
             }
             let height = size * 2;
             let width = (text.length * size) / 1.5;
@@ -708,8 +710,10 @@ class FateUtilities extends Application{
             let bonus = 2;
             let flavor = `<br>${game.i18n.localize("fate-core-official.FreeInvoke")}`
             let aspectsInvoked = [];
-            let all_sit_aspects = duplicate(game.scenes.viewed.getFlag("fate-core-official", "situation_aspects"));
-            if (keyboard.isDown("Shift") && game.user.isGM){
+            let asa = game.scenes.viewed.getFlag("fate-core-official", "situation_aspects");
+            if (!asa) asa = {};
+            let all_sit_aspects = duplicate(asa);
+            if (keyboard.isDown("Shift") && game.user.isGM && asa.filter(as => as.free_invokes > 0).length > 0){
                // Add dialog here to pick aspect(s) being invoked.
                // Dialogue should display all situation aspects in current scene with number of free invokes;
                // We then need to harvest the number of invokes being used on each and set bonus accordingly.
@@ -728,7 +732,7 @@ class FateUtilities extends Application{
                 for (let aspect of sit_aspects){
                     content += `<div style="display:flex; flex-direction:row"><div style="min-width:150px; padding:5px">${aspect.name}</div><div style="min-width:50px"><select class = "free_i_selector">${aspect.options}</select></div></div>`
                 }
-                content += `</div>`
+                content += `</div><br/>`
 
                let invokedAspects = await new Promise(resolve => {
                     new Dialog({
@@ -765,7 +769,9 @@ class FateUtilities extends Application{
                             let size = game.settings.get("fate-core-official","fuAspectLabelSize");
                             let font = CONFIG.fontFamilies[game.settings.get("fate-core-official","fuAspectLabelFont")];
                             if (size === 0){
-                                size = game.scenes.viewed.data.width*(1/100);
+                                size = Math.floor(game.scenes.viewed.data.width*(1/100));
+                                if (size < 8) size = 8;
+                                if (size > 256) size = 256;
                             }
                             let height = size * 2;
                             let width = (text.length * size) / 1.5;
@@ -791,17 +797,19 @@ class FateUtilities extends Application{
         if (action == "reroll"){
             let flavor = `<br>${game.i18n.localize("fate-core-official.FreeInvokeReroll")}`
 
-            let all_sit_aspects = duplicate(game.scenes.viewed.getFlag("fate-core-official", "situation_aspects"));
+            let asa = game.scenes.viewed.getFlag("fate-core-official", "situation_aspects");
+            if (!asa) asa = {};
+            let all_sit_aspects = duplicate(asa);
 
             let invokedAspect = undefined;
 
-            if (keyboard.isDown("Shift") && game.user.isGM){
+            if (keyboard.isDown("Shift") && game.user.isGM && asa.filter(as => as.free_invokes > 0).length > 0){
                 let options = ""
                 let sit_aspects = duplicate(game.scenes.viewed.getFlag("fate-core-official", "situation_aspects")).filter(as => as.free_invokes > 0);
                 for (let aspect of sit_aspects){
                     options +=`<option value="${aspect.name}">${aspect.name}</option>`
                 }                
-                let content =`<br/><div><select class="free_i_r_selector">${options}</select></div>`
+                let content =`<br/><div><select class="free_i_r_selector">${options}</select></div><br/>`
                let invokedAspects = await new Promise(resolve => {
                     new Dialog({
                         title: game.i18n.localize("fate-core-official.selectAspect"),
@@ -834,7 +842,9 @@ class FateUtilities extends Application{
                         let size = game.settings.get("fate-core-official","fuAspectLabelSize");
                         let font = CONFIG.fontFamilies[game.settings.get("fate-core-official","fuAspectLabelFont")];
                         if (size === 0){
-                            size = game.scenes.viewed.data.width*(1/100);
+                            size = Math.floor(game.scenes.viewed.data.width*(1/100));
+                            if (size < 8) size = 8;
+                            if (size > 256) size = 256;
                         }
                         let height = size * 2;
                         let width = (text.length * size) / 1.5;
@@ -1066,7 +1076,9 @@ class FateUtilities extends Application{
             let size = game.settings.get("fate-core-official","fuAspectLabelSize");
             let font = CONFIG.fontFamilies[game.settings.get("fate-core-official","fuAspectLabelFont")];
             if (size === 0){
-                size = game.scenes.viewed.data.width*(1/100);
+                size = Math.floor(game.scenes.viewed.data.width*(1/100));
+                if (size < 8) size = 8;
+                if (size > 256) size = 256;
             }
             let height = size * 2;
             let width = (text.length * size) / 1.5;
@@ -1103,11 +1115,13 @@ class FateUtilities extends Application{
                 let size = game.settings.get("fate-core-official","fuAspectLabelSize");
                 let font = CONFIG.fontFamilies[game.settings.get("fate-core-official","fuAspectLabelFont")];
                 if (size === 0){
-                    size = game.scenes.viewed.data.width*(1/100);
+                    size = Math.floor(game.scenes.viewed.data.width*(1/100));
+                    if (size < 8) size = 8;
+                    if (size > 256) size = 256;
                 }
                 let height = size * 2;
                 let width = (text.length * size / 1.5);
-                DrawingDocument.create({
+                await DrawingDocument.create({
                     type: CONST.DRAWING_TYPES.RECTANGLE,
                     author: game.user.id,
                     x: x,
@@ -1116,16 +1130,17 @@ class FateUtilities extends Application{
                     height: height,
                     fillType: CONST.DRAWING_FILL_TYPES.SOLID,
                     fillColor: game.settings.get("fate-core-official", "fuAspectLabelFillColour"),
-                    fillAlpha: 1,
+                    fillAlpha: game.settings.get("fate-core-official", "fuAspectLabelFillAlpha"),
                     strokeWidth: 4,
                     strokeColor: game.settings.get("fate-core-official", "fuAspectLabelBorderColour"),
-                    strokeAlpha: 1,
+                    strokeAlpha: game.settings.get("fate-core-official", "fuAspectLabelBorderAlpha"),
                     text: text,
                     fontFamily: font,
                     fontSize: size,
                     textColor: game.settings.get("fate-core-official", "fuAspectLabelTextColour"),
                     points: []
                 }, {parent: game.scenes.viewed});   
+                await canvas.drawings.activate();
         }
         else {
             ui.notifications.error(game.i18n.localize("fate-core-official.AlreadyANoteForThatAspect"));
@@ -1294,7 +1309,9 @@ class FateUtilities extends Application{
             let size = game.settings.get("fate-core-official","fuAspectLabelSize");
             let font = CONFIG.fontFamilies[game.settings.get("fate-core-official","fuAspectLabelFont")];
             if (size === 0){
-                size = game.scenes.viewed.data.width*(1/100);
+                size = Math.floor(game.scenes.viewed.data.width*(1/100));
+                if (size < 8) size = 8;
+                if (size > 256) size = 256;
             }
             let height = size * 2;
             let width = (text.length * size) / 1.5;
@@ -1363,9 +1380,16 @@ class FateUtilities extends Application{
         let countdown = countdowns[data[0]];
         let vis = countdown.visible;
         // Valid values are visible, hidden, show_boxes
-        if (vis == "hidden") countdown.visible = "show_boxes";
-        if (vis == "show_boxes") countdown.visible = "visible";
-        if (vis == "visible") countdown.visible = "hidden";
+
+        if (keyboard.isDown("Shift")){
+            if (vis == "hidden") countdown.visible = "visible";
+            if (vis == "show_boxes") countdown.visible = "hidden";
+            if (vis == "visible") countdown.visible = "show_boxes";
+        } else {
+            if (vis == "hidden") countdown.visible = "show_boxes";
+            if (vis == "show_boxes") countdown.visible = "visible";
+            if (vis == "visible") countdown.visible = "hidden";    
+        }
 
         await game.settings.set("fate-core-official", "countdowns", countdowns);
         await game.socket.emit("system.fate-core-official",{"render":true});
@@ -1929,15 +1953,21 @@ class FUAspectLabelClass extends FormApplication {
     async _updateObject(event, formData){
         let font = formData.fu_label_font;
         let size = formData.fu_font_size;
+        if (size != 0 && size < 8) size = 8;
+        if (size > 256) size = 256;
         let text = formData.fu_text_color;
         let fill = formData.fu_fill_color;
         let border = formData.fu_border_color;
+        let border_alpha = formData.fu_border_alpha;
+        let fill_alpha = formData.fu_fill_alpha;
 
         await game.settings.set("fate-core-official","fuAspectLabelFont", CONFIG.fontFamilies.indexOf(font));
         await game.settings.set("fate-core-official","fuAspectLabelSize", size);
         await game.settings.set("fate-core-official", "fuAspectLabelTextColour", text);
         await game.settings.set("fate-core-official", "fuAspectLabelFillColour", fill);
         await game.settings.set("fate-core-official", "fuAspectLabelBorderColour",border);
+        await game.settings.set("fate-core-official", "fuAspectLabelBorderAlpha",border_alpha);
+        await game.settings.set("fate-core-official", "fuAspectLabelFillAlpha",fill_alpha);
 
         this.close();
     }
@@ -1949,7 +1979,9 @@ class FUAspectLabelClass extends FormApplication {
                     fontSize:game.settings.get("fate-core-official", "fuAspectLabelSize"),
                     textColour:game.settings.get("fate-core-official","fuAspectLabelTextColour"),
                     fillColour:game.settings.get("fate-core-official","fuAspectLabelFillColour"),
-                    borderColour:game.settings.get("fate-core-official","fuAspectLabelBorderColour")
+                    borderColour:game.settings.get("fate-core-official","fuAspectLabelBorderColour"),
+                    borderAlpha:game.settings.get("fate-core-official","fuAspectLabelBorderAlpha"),
+                    fillAlpha:game.settings.get("fate-core-official", "fuAspectLabelFillAlpha")
                 }
     }
 
