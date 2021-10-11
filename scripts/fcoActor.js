@@ -11,7 +11,12 @@ export class fcoActor extends Actor {
 
     // Override the standard createDialog to just spawn a character called 'New Actor'.
     static async createDialog (...args){
-        Actor.create({"name":"New Character", "type":"fate-core-official"});
+        if (args[0].folder) {
+            Actor.create({"name":"New Character", "folder":args[0].folder, "type":"fate-core-official", permission: {"default":CONST.ENTITY_PERMISSIONS[game.settings.get("fate-core-official", "default_actor_permission")]}});
+        } else {
+            Actor.create({"name":"New Character", "type":"fate-core-official", permission: {"default":CONST.ENTITY_PERMISSIONS[game.settings.get("fate-core-official", "default_actor_permission")]}});
+        }
+        
     }
 
     async _preCreate(...args){
@@ -211,8 +216,15 @@ export class fcoActor extends Actor {
 
     async updateFromExtra(itemData) {
         let actor = this;
+
+        if (!itemData.data.active && !itemData.data.data.active) {
+            // This currently adds the stuff to the character sheet even if active is false, which we do not want.
+            return;
+        }
+
         actor.sheet.editing = true;
             let extra = duplicate(itemData);
+            console.log(extra);
     
             //Find each aspect, skill, stunt, and track attached to each extra
             //Add an extra data item to the data type containing the id of the original item.
@@ -486,6 +498,7 @@ export class fcoActor extends Actor {
             let rankS = rank.toString();
             let rung = ladder[rankS];
             let roll = await r.roll();
+            roll.dice[0].options.sfx = {id:"fate4df",result:roll.result};
 
             let msg = ChatMessage.getSpeaker(actor)
             msg.alias = actor.name;
@@ -493,7 +506,7 @@ export class fcoActor extends Actor {
             roll.toMessage({
                 flavor: `<h1>${skill.name}</h1>${game.i18n.localize("fate-core-official.RolledBy")}: ${game.user.name}<br>
                         ${game.i18n.localize("fate-core-official.SkillRank")}: ${rank} (${rung})`,
-                speaker: msg
+                speaker: msg,
             });
         }
     }
@@ -524,6 +537,7 @@ export class fcoActor extends Actor {
     
             let r = new Roll(`4dF + ${rank}+${bonus}`);
             let roll = await r.roll();
+            roll.dice[0].options.sfx = {id:"fate4df",result:roll.result};
     
             let msg = ChatMessage.getSpeaker(this.actor)
             msg.alias = this.name;

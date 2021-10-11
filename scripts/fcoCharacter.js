@@ -328,7 +328,7 @@ export class fcoCharacter extends ActorSheet {
                             <td style="padding:10px">
                                 ${game.i18n.localize("fate-core-official.HowRecover")}:
                             </td>
-                            <td>
+                            <td style="padding:10px">
                                 ${track.recovery_conditions}
                             </td>
                         </tr>
@@ -466,8 +466,48 @@ export class fcoCharacter extends ActorSheet {
             const cat_select = html.find("select[id='track_category']");
             cat_select.on("change", event => this._cat_select_change (event, html));
 
-            const item = html.find("div[name='item_header']");
+            const item = html.find("div[class='item_header']");
             item.on("dragstart", event => this._on_item_drag (event, html));
+
+            item.on("dblclick", async event => {
+                let content = `<strong>${game.i18n.format("fate-core-official.sharedFrom",{name:this.object.name})}</strong><br/><hr>`
+                let user = game.user;
+                let item = await fromUuid(event.currentTarget.getAttribute("data-item"));
+                item = duplicate(item.data);
+                
+                content += `<strong>${item.name}</strong><br/>
+                            <img style="display:block; padding:5px; margin-left:auto; margin-right:auto;" src="${item.img}"/><br/>
+                            <strong>${game.i18n.localize("fate-core-official.Description")}:</strong> ${item.data.description.value}<br/>
+                            <strong>${game.i18n.localize("fate-core-official.Permissions")}:</strong> ${item.data.permissions}<br/>
+                            <strong>${game.i18n.localize("fate-core-official.Costs")}:</strong> ${item.data.costs}<br/>
+                            <strong>${game.i18n.localize("fate-core-official.Refresh")}:</strong> ${item.data.refresh}<br/>`
+
+                let items = [];
+                for (let aspect in item.data.aspects){
+                    items.push(`${item.data.aspects[aspect].value}`)
+                }
+                content += `<strong>${game.i18n.localize("fate-core-official.Aspects")}: </strong>${items.join(", ")}<br/>`;
+                
+                items = [];                            
+                for (let skill in item.data.skills){
+                    items.push (`${item.data.skills[skill].name} (${item.data.skills[skill].rank})`);
+                }
+                content += `<strong>${game.i18n.localize("fate-core-official.Skills")}: </strong>${items.join(", ")}<br/>`;
+
+                items = [];                            
+                for (let stunt in item.data.stunts){
+                    items.push (item.data.stunts[stunt].name);
+                }
+                content += `<strong>${game.i18n.localize("fate-core-official.Stunts")}: </strong>${items.join(", ")}<br/>`;
+
+                items = [];                            
+                for (let track in item.data.tracks){
+                    items.push (item.data.tracks[track].name);
+                }
+                content += `<strong>${game.i18n.localize("fate-core-official.tracks")}: </strong>${items.join(", ")}<br/>`;
+
+                ChatMessage.create({content: content, speaker : {user}, type: CONST.CHAT_MESSAGE_TYPES.OOC })
+            })
 
             const mfdraggable = html.find('.mf_draggable');
             mfdraggable.on("dragstart", event => {
@@ -489,6 +529,59 @@ export class fcoCharacter extends ActorSheet {
                 }
             })
 
+            mfdraggable.on("dblclick", event => {
+                let origin = event.target.getAttribute("data-mfactorid");
+                let content = `<strong>${game.i18n.format("fate-core-official.sharedFrom",{name:this.object.name})}</strong><br/><hr>`
+                let user = game.user;
+                let type = event.target.getAttribute("data-mfdtype");
+                
+                let name = event.target.getAttribute("data-mfname");
+                let entity;
+                if (type == "skill") {
+                    entity = this.actor.data.data.skills[name];
+                    content += `<strong>${game.i18n.localize("fate-core-official.Name")}: </strong> ${entity.name}<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Rank")}: </strong> ${entity.rank}<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Description")}: </strong> ${entity.description}</br>`
+                }
+                if (type == "stunt") {
+                    entity = this.actor.data.data.stunts[name];
+                    content += `<strong>${game.i18n.localize("fate-core-official.Name")}: </strong> ${entity.name} (${game.i18n.localize("fate-core-official.Refresh")} ${entity.refresh_cost})<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Description")}:</strong> ${entity.description}<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Skill")}:</strong> ${entity.linked_skill}<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Bonus")}:</strong> ${entity.bonus}<br/>`;
+                    let actions = `<em style = "font-family:Fate; font-style:normal">`;
+                    if (entity.overcome) actions += 'O ';
+                    if (entity.caa) actions += 'C ';
+                    if (entity.attack) actions += 'A '
+                    if (entity.defend) actions += 'D';
+                    content += actions;
+                }
+                if (type == "aspect"){
+                    entity = this.actor.data.data.aspects[name];
+                    content += `<strong>${game.i18n.localize("fate-core-official.Name")}: </strong> ${entity.name}<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Value")}: </strong> ${entity.value}<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Description")}: </strong> ${entity.description}</br>
+                                <strong>${game.i18n.localize("fate-core-official.Notes")}: </strong> ${entity.notes}`
+                } 
+                if (type == "track") {
+                    entity = this.actor.data.data.tracks[name];
+                    content += `<strong>${game.i18n.localize("fate-core-official.Name")}: </strong> ${entity.name}<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Description")}: </strong> ${entity.description}</br>
+                                <strong>${game.i18n.localize("fate-core-official.Notes")}: </strong> ${entity.notes}`
+                    if (entity.aspect.when_marked) content += `<strong>${game.i18n.localize("fate-core-official.Aspect")}</strong>: ${entity.aspect.name}<br/>`
+                    if (entity.boxes > 0){
+                        content += `<em style="font-family:Fate; font-style:normal">`
+                        for (let i = 0; i < entity.box_values.length; i++){
+                            if (entity.box_values[i]) content += '.';
+                            if (!entity.box_values[i]) content += '1';
+                        }
+                        content += `<\em>`
+                    }
+                }
+
+                ChatMessage.create({content: content, speaker : {user}, type: CONST.CHAT_MESSAGE_TYPES.OOC })
+            })
+
             const input = html.find('input[type="text"], input[type="number"], textarea');
 
             const extra_active = html.find('button[name = "extra_active"]');
@@ -498,9 +591,11 @@ export class fcoCharacter extends ActorSheet {
                 if (item.data.data.active){
                     await item.update({"data.active":false},{render:false});
                     await this.document.deactivateExtra(item, false);
+                    this.render(false);
                 } else {
                     await item.update({"data.active":true},{render:false});
                     this.document.updateFromExtra(item);
+                    this.render(false);
                 }
             });
 
@@ -708,10 +803,10 @@ export class fcoCharacter extends ActorSheet {
             });
 
             input.on("blur", event => {
-                this.editing = false
+                this.editing = false;
                 if (this.renderBanked){
                     this.renderBanked = false;
-                    this.render(false);
+                    this._render(false);
                 }
             });
 
@@ -779,7 +874,9 @@ export class fcoCharacter extends ActorSheet {
         let info = event.target.id.split("_");
         let item_id = info[1];
         let actor_id = info[0];
-        let item = JSON.parse(event.target.getAttribute("data-item"));
+        let item = await fromUuid(event.currentTarget.getAttribute("data-item"));
+        item = duplicate(item.data);
+        
         let tokenId = undefined;
 
         if (this.actor.isToken === true){
@@ -880,9 +977,9 @@ export class fcoCharacter extends ActorSheet {
                     setTimeout(() => {
                         super._render(...args);
                         this.renderPending = false;
-                    }, 5);
+                    }, 50);
             }
-        } else this.renderBanked = true;
+        } else this.renderBanked = true;;
     }
 
     async _on_extras_click(event, html){
@@ -1028,16 +1125,28 @@ export class fcoCharacter extends ActorSheet {
     }
 
     async _onSkill_name(event, html) {
-
-        let umr = false;
-        if (event.shiftKey && !game.settings.get("fate-core-official","modifiedRollDefault")) umr = true;
-        if (!event.shiftKey && game.settings.get("fate-core-official","modifiedRollDefault")) umr = true;
-
-        if (umr){
-            await this.object.rollModifiedSkill(event.target.id);
-        }
-        else {
-            await this.object.rollSkill(event.target.id);
+        let target = this.object;
+            if (event.originalEvent.detail > 1){
+                this.clickPending = true;
+                return;
+            }
+            if (event.originalEvent.detail == 1){
+            setTimeout(async () => {
+                if (this.clickPending) {
+                    this.clickPending = false;
+                    return;
+                } else {
+                    let umr = false;
+                    if (event.shiftKey && !game.settings.get("fate-core-official","modifiedRollDefault")) umr = true;
+                    if (!event.shiftKey && game.settings.get("fate-core-official","modifiedRollDefault")) umr = true;
+                    if (umr){
+                        await target.rollModifiedSkill(event.target.id);
+                    }
+                    else {
+                        await target.rollSkill(event.target.id);
+                    }
+                }
+            }, 300);
         }
     }
 

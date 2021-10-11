@@ -70,7 +70,7 @@ class AspectSetup extends FormApplication{
  
         new Dialog({
             title: game.i18n.localize("fate-core-official.CopyPasteToSaveAspect"), 
-            content: `<div style="background-color:white; color:black;"><textarea rows="20" style="font-family:Montserrat; width:382px; background-color:white; border:1px solid lightsteelblue; color:black;">${aspect_text}</textarea></div>`,
+            content: `<div style="background-color:white; color:black;"><textarea rows="20" style="font-family:var(--fco-font-family); width:382px; background-color:white; border:1px solid var(--fco-foundry-interactable-color); color:black;">${aspect_text}</textarea></div>`,
             buttons: {
             },
         }).render(true);
@@ -82,7 +82,7 @@ class AspectSetup extends FormApplication{
  
         new Dialog({
             title: game.i18n.localize("fate-core-official.CopyPasteToSaveAspects"), 
-            content: `<div style="background-color:white; color:black;"><textarea rows="20" style="font-family:Montserrat; width:382px; background-color:white; border:1px solid lightsteelblue; color:black;">${aspects_text}</textarea></div>`,
+            content: `<div style="background-color:white; color:black;"><textarea rows="20" style="font-family:var(--fco-font-family); width:382px; background-color:white; border:1px solid var(--fco-foundry-interactable-color); color:black;">${aspects_text}</textarea></div>`,
             buttons: {
             },
         }).render(true);
@@ -92,7 +92,7 @@ class AspectSetup extends FormApplication{
         return new Promise(resolve => {
             new Dialog({
                 title: game.i18n.localize("fate-core-official.PasteAspects"),
-                content: `<div style="background-color:white; color:black;"><textarea rows="20" style="font-family:Montserrat; width:382px; background-color:white; border:1px solid lightsteelblue; color:black;" id="import_aspects"></textarea></div>`,
+                content: `<div style="background-color:white; color:black;"><textarea rows="20" style="font-family:var(--fco-font-family); width:382px; background-color:white; border:1px solid var(--fco-foundry-interactable-color); color:black;" id="import_aspects"></textarea></div>`,
                 buttons: {
                     ok: {
                         label: game.i18n.localize("fate-core-official.Save"),
@@ -200,8 +200,32 @@ class EditAspect extends FormApplication{
             }
         }
 
-        _updateObject(){
+        async _updateObject(event, f){
+            let name = f.name;
+            let description = f.description;
+            var existing = false;
+            let aspects=game.settings.get("fate-core-official","aspects");
+            let newAspect = {"name":name, "description":description, "notes":""};
 
+            //First check if we already have an aspect by that name, or the aspect is blank; if so, throw an error.
+            if (name == undefined || name ==""){
+                ui.notifications.error(game.i18n.localize("fate-core-official.YouCannotHaveAnAspectWithABlankName"))
+                return;
+            } else {
+                if (aspects[name] != undefined){
+                    aspects[name] = newAspect;
+                    existing = true;
+                }
+            }
+            if (!existing){
+                if (this.aspect.name != ""){
+                    //That means the name has been changed. Delete the original aspect and replace it with this one.
+                    delete aspects[this.aspect.name]
+                }            
+                aspects[name]=newAspect;
+            }
+            await game.settings.set("fate-core-official","aspects",aspects);
+            this.close();
         }
 
     //Here are the action listeners
@@ -236,28 +260,8 @@ class EditAspect extends FormApplication{
         //Get the name and description of the aspect
         let name = html.find("input[id='edit_aspect_name']")[0].value.split(".").join("․").trim();
         let description = DOMPurify.sanitize(html.find("div[id='edit_aspect_description']")[0].innerHTML);
-        let aspects=game.settings.get("fate-core-official","aspects");
-        let newAspect = {"name":name, "description":description, "notes":""};
-        var existing = false;
 
-        //First check if we already have an aspect by that name, or the aspect is blank; if so, throw an error.
-        if (name == undefined || name ==""){
-            ui.notifications.error(game.i18n.localize("fate-core-official.YouCannotHaveAnAspectWithABlankName"))
-        } else {
-            if (aspects[name] != undefined){
-                aspects[name] = newAspect;
-                existing = true;
-            }
-        }
-        if (!existing){
-            if (this.aspect.name != ""){
-                //That means the name has been changed. Delete the original aspect and replace it with this one.
-                delete aspects[this.aspect.name]
-            }            
-            aspects[name]=newAspect;
-        }
-        await game.settings.set("fate-core-official","aspects",aspects);
-        this.close();
+        this._updateObject(event, {"name":name, "description":description})
     }    
 
     static get defaultOptions() {

@@ -1,3 +1,116 @@
+# Version 4.2.14
+  * Rolls modified from Fate Utilities now also modify the original roll chat message.
+  * Rerolls from Fate Utilities now show the original roll on the entry for the reroll.
+
+# Version 4.2.13
+  * The new feature added in 4.2.12 now also applies to combatants.
+
+# Version 4.2.12
+  * Added a new setting, "Fate Utilities Ignore List". This accepts a comma-separated string of prefixes; any tokens with a name or actor name starting with that prefix (e.g. (TH) for Trigger Happy) won't be shown in Fate Utilities.
+
+# Version 4.2.11
+  * Edited behaviour on adding an extra to a character to ensure no change is made to the character unless the extra is set to Active when it is added.
+
+# Version 4.2.10
+  * Set Fate Utilities to ignore any combatant that's not of type 'fate-core-official' or 'Thing'.
+
+# Version 4.2.09
+  * Set Fate Utilities to ignore any token that's not of type 'fate-core-official' so that Trigger Happy tokens (and anything else that adds tokens to the map) won't clog up Fate Utilities.
+
+# Version 4.2.08
+  * Added an explicit render call to the toggle extra button on the Fate character sheet, as it wasn't automatically rendering for token actors.
+
+# Version 4.2.07
+  * Added the .fate class to Thing sheets, removing the grey padding around the sheet window.
+  * Added the double-click function to share an Exta to chat from Thing character sheets.
+  * Changed drag/drop handlers to use fromUuid rather than encoding the entire item in the html data tag to improve efficiency.
+
+# Version 4.2.06
+  * Prevented URL stripping on adding an item avatar IF the link provided is not a local link.
+
+# Version 4.2.05
+  * Fixed a small bug that was causing the stunt DB filter command to fail in some cases if there was an issue with a malformed stunt in the database.
+
+# Version 4.2.04
+  * Fixed a bug by removing the extra_tag from stunts when adding all stunts from a character to the stunt database.
+
+# Version 4.2.03
+  * Added the ability to double-click on the names of stunts, skills, aspects, and tracks on extra and character sheets (and the stunt database) to post a summary of it into the OOC chat messages.
+
+# Version 4.2.02
+  * Tweaked the debounce timing in my custom render functions to solve a render timing issue on character sheets.
+  * Added a button to the token layer (with the Fate Utilities and Show Character buttons) to display the stunt database without having to open a character sheet first (GM only). If you're the GM you can also drag and drop from the stunt database to a character or extra by clicking on the table cell containing the stunt's name.
+
+# Version 4.2.01
+  * Tweaked for compatibility with version 9 prototype 2 (v9.224)
+  * Minor edit to characterview to render HTML in stunt descs.
+  * Thanks to John Helmuth for tracking down an issue relating to situation aspects with empty names. Fate Utilities now disables aspect manipulation fields until aspects have been given a name.
+
+# Version 4.1.30
+  * Tweaked some localization strings to be a bit more user friendly.
+
+# Version 4.1.29
+  * Added a new feature to the Fate Utilities Roll tab; you can now click the tools icon to manually adjust a roll by a positive or negative number of your choice, with a text description.
+  * There is also a paid modifier button to modify the dice roll and spend a fate point.
+  * I also fixed a bug in v4.1.27's user setting to change the system font; it wasn't correctly allocating the font on first load for a user because it was setting the value of the setting to a string rather than a numeric index of the font on CONFIG.fontFamilies.
+
+# Version 4.1.28
+  * Fixed a minor bug that was causing Fate Utilities to stop rendering when an added aspect was tabbed out of instead of clicking elsewhere in the window.
+
+# Version 4.1.27
+  * Provided two new settings: 
+    ** Setting 1 allows users to select a font they wish to use from the list of fonts installed in Foundry. This will set almost all text in Foundry to use that font unless setting 2 is set to true.
+    ** Setting 2 disables the above font override in respect of system fonts used in menus etc.
+
+# Version 4.1.26
+  * Finally fixed an annoying margin issue on the track info display obtained by right clicking a track on a character sheet.
+
+# Version 4.1.25
+  * System now won't ask if you want to exit without saving changes when you click the 'save' button.
+
+# Version 4.1.24
+  * Exiting the player skill editor without saving when changes have been made now asks if you to confirm that you wish to abandon changes.
+
+# Version 4.1.23
+  * Setting to put drawings on top layer now checks to see if the canvas is active to prevent an error if it isn't.
+  * Added John Helmuth's pull request to make the 'continue without installing' button dynamic rather than fixed in height.
+  * Corrected scrollY behaviour on biography and notes fields on character sheet when editiing them.
+
+# Version 4.1.22
+  * A refresh is no longer required FOR OTHER CONNECTED CLIENTS to switch drawings from the bottom layer to the top layer and vice versa.
+
+# Version 4.1.21
+  * A refresh is no longer required to switch drawings from the bottom layer to the top layer and vice versa.
+
+# Version 4.1.20
+  * The option to render the drawings layer on top of other layers is now working again. The drawing layer now exists in the Interface Layer group rather than the Primary Layer group when this option is enabled.
+
+# Version 4.1.19
+  * Removed two settings for FU Aspect Labels that were meant to be only available from the separate options dialog in the Scene tab of FateUtilities.
+  * Moved the character sheet customisation options to a separate menu and added some additional settings, allowing each user to define:
+    ** The sheet header colour
+    ** The sheet accent colour (this is used for scroll bars and the borders of certain elements)
+    ** The sheet label colour (the text labels like 'skills' etc.)
+    ** Whether to use rounded header bars or notched header bars (notched bars look like those on the print Fate Core character sheet)
+
+# Version 4.1.18
+  * Added settings for the Skills and Aspects pane minimum percentage heights on the character sheet. This allows each user to tweak the maximum height of these panes on the character sheet to suit their needs and their monitor size.
+
+# Version 4.1.17
+  * Clicking the 'create a character' button inside an actor folder once again puts the created character in that folder rather than dumping it in the root of the characters folder.
+
+# Version 4.1.16
+  * Added an option: Default Actor Permission (None, Limited, Observer, Owner). This defaults to None as per standard Foundry actor permissions. Any actor you create from the main create button or from the button to create from a template will be set to this permission level.
+  * Added an eye-with-slash icon next to the name of an actor in Fate Utilities where that actor's default permissions are set to 'None' - this is a reminder that players can't see that actor in Fate Utilities.
+  * Added a ghost icon next to the name of an actor in Fate Utilities where that actor's token is hidden - this is a reminder that players can't see that actor in Fate Utilities because of this.
+  * For consistency, owned characters (that is, PCs) which have default permissions of None are also now hidden from Fate Utilities for players (and will display an icon accordingly in the GM view)
+
+# Version 4.1.15
+  * Made a slight improvement to the layout of the Scene tab of Fate Utilities so there's more room for the notes tab.
+  * Added support for Dice So Nice special effects at specific Fate rolls (e.g. -4, +4, 0). This is not currently working, but I think this is a DSN bug. Waiting for feedback from developers.
+  * Hitting enter on the name field of a new aspect in the system aspect editor will save the aspect rather than dismissing it.
+  * Fixed a bug in the GM shift-click free invoke selection tool; aspects with spaces in their name were not working properly.
+
 # Version 4.1.14
   * Added a new feature to change the behaviour of the minimal sheet view. I've added a little eye button to the sheet (for GMs only). It toggles between three states: Minimal view, minimal view at refresh 0, and full view regardless of refresh. Default behaviour is minimal view at refresh 0, but I wanted to give GMs the option to have player NPCs with refresh 0 that still have a full character sheet, etc.
 

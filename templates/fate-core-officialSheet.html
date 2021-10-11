@@ -1,4 +1,4 @@
-<form class="mfate-sheet contenteditable" style="background: white; width:100%; height: 100%; border:none !important">
+<form class="mfate-sheet contenteditable" style="background:white; width:100%; height: 100%; border:none !important">
     <div class="mfate-sheet__header">
         <div style="display:block; width:50%">
             <div style="display:flex; flex-direction:row; width:100%"><img class="mfate-sheet__identity-avatar profile-img" width="150" height="auto" style="border:0; cursor: pointer; padding-right:5px" id="avatar" data-edit="img" src="{{document.img}}"></img>
@@ -156,9 +156,9 @@
                                 <div class="mfate-tracks__list" id ="track_{{this.name}}" title="{{this.recovery_type}} - {{localize 'fate-core-official.RightClickForDetails'}}">
                                     <div class="mfate-tracks__item">
                                         <div class="mfate-tracks__item-label">
-                                            <div name="track_name" style="font-family:Montserrat">
+                                            <div name="track_name" style="font-family:var(--fco-font-family)">
                                                 <i name="expandTrack" style="width:20px; height:20px; float:left; background-color:transparent; border:none" {{#if (expanded ../this.document (concat this.name '_track'))}}icon class="fas fa-compress fu_button" title="{{localize 'fate-core-official.Minimise'}}"{{else}}icon class = "fas fa-expand fu_button" title="{{localize 'fate-core-official.Maximise'}}"{{/if}} id="{{this.name}}_expandTrack"></i>
-                                                <i class="mf_draggable" {{#if ../GM}}draggable="true"{{/if}} data-mfdtype="track" data-mfname="{{this.name}}" data-mfactorid="{{../document.id}}" style="font-style:normal; font-weight:bold; font-family: Montserrat;">{{this.name}}</i>
+                                                <i class="mf_draggable" {{#if ../GM}}draggable="true"{{/if}} data-mfdtype="track" data-mfname="{{this.name}}" data-mfactorid="{{../document.id}}" style="font-style:normal; font-weight:bold; font-family: var(--fco-font-family);">{{this.name}}</i>
                                             </div>
                                         </div>
                                         <!-- CHECKBOXES-->
@@ -335,8 +335,8 @@
                     <div class="fate-extras__content-body" name="extras_body">
                         <div class="fate-extras__row">
                             {{#each items}}
-                            <div name="item_header" draggable="true" id="{{../this.document.id}}_{{this.id}}" data-item="{{str this}}">
-                            <div class = "fate-extras__row-header" style="margin-left:5px; margin-right:5px">
+                            <div class="item_header" name="item_header" draggable="true" id="{{../this.document.id}}_{{this.id}}" data-item="{{this.uuid}}">
+                            <div class = "fate-extras__row-header" margin-left:5px; margin-right:5px">
                                 <i name="expandExtra" style="width:20px; height:20px; float:left; background-color:transparent; border:none" {{#if (expanded ../this.document (concat this.id '_extra'))}}icon class="fas fa-compress fu_button" title="{{localize 'fate-core-official.Minimise'}}"{{else}}icon class = "fas fa-expand fu_button" title="{{localize 'fate-core-official.Maximise'}}"{{/if}} id="{{this.id}}_expandExtra"></i>
                                 &nbsp{{{enr  this.name ../this.document}}}
                                 <button i icon class="fas fa-trash fate-extras__row-header-button fu_button" type="button" name="delete_extra" id="{{this.id}}_delete"></button>

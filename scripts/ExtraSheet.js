@@ -13,7 +13,7 @@ export class ExtraSheet extends ItemSheet {
                     setTimeout(() => {
                         super._render(...args);
                         this.renderPending = false;
-                    }, 5);
+                    }, 50);
             }
         } else this.renderBanked = true;
     }
@@ -103,6 +103,57 @@ export class ExtraSheet extends ItemSheet {
                 }
             })
 
+            mfdraggable.on("dblclick", event => {
+                let content = `<strong>${game.i18n.format("fate-core-official.sharedFrom",{name:this.object.name})}</strong><br/><hr>`
+                let user = game.user;
+                let type = event.currentTarget.getAttribute("data-mfdtype");
+                let name = event.currentTarget.getAttribute("data-mfname");
+                let entity;
+                if (type == "skill") {
+                    entity = this.document.data.data.skills[name];
+                    content += `<strong>${game.i18n.localize("fate-core-official.Name")}: </strong> ${entity.name}<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Rank")}: </strong> ${entity.rank}<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Description")}: </strong> ${entity.description}</br>`
+                }
+                if (type == "stunt") {
+                    entity = this.document.data.data.stunts[name];
+                    content += `<strong>${game.i18n.localize("fate-core-official.Name")}: </strong> ${entity.name} (${game.i18n.localize("fate-core-official.Refresh")} ${entity.refresh_cost})<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Description")}:</strong> ${entity.description}<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Skill")}:</strong> ${entity.linked_skill}<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Bonus")}:</strong> ${entity.bonus}<br/>`;
+                    let actions = `<em style = "font-family:Fate; font-style:normal">`;
+                    if (entity.overcome) actions += 'O ';
+                    if (entity.caa) actions += 'C ';
+                    if (entity.attack) actions += 'A '
+                    if (entity.defend) actions += 'D';
+                    content += actions;
+                }
+                if (type == "aspect"){
+                    entity = this.document.data.data.aspects[name];
+                    content += `<strong>${game.i18n.localize("fate-core-official.Name")}: </strong> ${entity.name}<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Value")}: </strong> ${entity.value}<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Description")}: </strong> ${entity.description}</br>
+                                <strong>${game.i18n.localize("fate-core-official.Notes")}: </strong> ${entity.notes}`
+                } 
+                if (type == "track") {
+                    entity = this.document.data.data.tracks[name];
+                    content += `<strong>${game.i18n.localize("fate-core-official.Name")}: </strong> ${entity.name}<br/>
+                                <strong>${game.i18n.localize("fate-core-official.Description")}: </strong> ${entity.description}</br>
+                                <strong>${game.i18n.localize("fate-core-official.Notes")}: </strong> ${entity.notes}`
+                    if (entity.aspect.when_marked) content += `<strong>${game.i18n.localize("fate-core-official.Aspect")}</strong>: ${entity.aspect.name}<br/>`
+                    if (entity.boxes > 0){
+                        content += `<em style="font-family:Fate; font-style:normal">`
+                        for (let i = 0; i < entity.box_values.length; i++){
+                            if (entity.box_values[i]) content += '.';
+                            if (!entity.box_values[i]) content += '1';
+                        }
+                        content += `<\em>`
+                    }
+                }
+
+                ChatMessage.create({content: content, speaker : {user}, type: CONST.CHAT_MESSAGE_TYPES.OOC })
+            })
+
         $('.fcoExtra').on('drop', async event => await this.onDrop(event, html))
 
         // We need one of these for each field that we're setting up as a contenteditable DIV rather than a simple textarea.
@@ -154,7 +205,19 @@ export class ExtraSheet extends ItemSheet {
         new MutationObserver(function onSrcChange(MutationRecord){
             // Code to update avatar goes here
             target_id = MutationRecord[0].target.id.split("_")[0];
-            newsrc = (MutationRecord[0].target.src.replace(/^(?:\/\/|[^/]+)*\//, ''));
+
+            // If we strip the absolute path, it will break the link for a Foundry installation hosted on The Forge, plus images directly hosted on websites etc. won't work. 
+            // So let's not do that for remotely hosted installations.
+            // Otherwise though we want a local link, to prevent a file set on localhost from breaking if connecting from outside, or a move of dynamic DNS service breaking it.
+
+            let src = MutationRecord[0].target.src;
+
+            if (src.startsWith(window.location.origin)){
+                newsrc = (MutationRecord[0].target.src.replace(/^(?:\/\/|[^/]+)*\//, ''));
+            } else {
+                newsrc = src;
+            }
+            console.log(newsrc);
             if (target_id == this_id){
                 doc.update({"img":newsrc});
             }

@@ -43,26 +43,62 @@ Hooks.on("preCreateActor", (actor, data, options, userId) => {
     }
 });
 
+function setupSheet(){
+    // Setup the character sheet according to the user's settings
+    let val = game.settings.get("fate-core-official","fco-aspects-pane-mheight");
+    document.documentElement.style.setProperty('--fco-aspects-pane-mheight', `${val}%`);
+    document.documentElement.style.setProperty('--fco-stunts-pane-mheight', `${100-val}%`);
+
+	val = game.settings.get("fate-core-official","fco-skills-pane-mheight");
+    document.documentElement.style.setProperty('--fco-skills-pane-mheight', `${val}%`);
+    document.documentElement.style.setProperty('--fco-tracks-pane-mheight', `${100-val}%`);
+
+    if (game.settings.get("fate-core-official","fco-notched-headers")) {
+        document.documentElement.style.setProperty('--fco-header-notch', "polygon(0% 10px, 10px 0%, 100% 0%, 100% 0px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0px 100%, 0 calc(100% - 20px))");
+        document.documentElement.style.setProperty('--fco-border-radius', "0px");
+    } else {
+        document.documentElement.style.setProperty('--fco-header-notch', "polygon(0% 0px, 0px 0%, 100% 0%, 100% 0px, 100% 100%, 100% 100%, 0px 100%, 0 100%)");
+        document.documentElement.style.setProperty('--fco-border-radius', "15px");
+    }
+
+    val = game.settings.get("fate-core-official","sheetHeaderColour");
+    document.documentElement.style.setProperty('--fco-header-colour', `${val}`);
+
+    val = game.settings.get("fate-core-official","sheetAccentColour");
+    document.documentElement.style.setProperty('--fco-accent-colour', `${val}`);
+
+    val = game.settings.get("fate-core-official","sheetLabelColour");
+    document.documentElement.style.setProperty('--fco-label-colour', `${val}`);
+}
+
+function setupFont(){
+    // Setup the system font according to the user's settings
+    let val = CONFIG.fontFamilies[game.settings.get("fate-core-official","fco-font-family")];
+    let override = game.settings.get("fate-core-official", "override-foundry-font");
+    if (override) {
+        document.documentElement.style.setProperty('--fco-foundry-font-family', "")
+        document.documentElement.style.setProperty('--fco-font-family', `${val}`);
+    } else {
+        document.documentElement.style.setProperty('--fco-font-family', `${val}`);
+        document.documentElement.style.setProperty('--fco-foundry-font-family', `${val}`);
+    }
+}
+    
 Hooks.once('ready', () => {
     if (game.settings.get ("fate-core-official", "drawingsOnTop")){
         try {
-            canvas.layers.find(l => l.name === 'DrawingsLayer').zIndex = 350
+            game.canvas.drawings.setParent(game.canvas.interface);
         } catch {
             // This just means that the layers aren't instantiated yet.
         }
     }
+    setupSheet();
+    setupFont();
 });
 
-Hooks.on('getSceneControlButtons', function(hudButtons){
-    if (game.settings.get ("fate-core-official", "drawingsOnTop")){
-        try {
-            canvas.layers.find(l => l.name === 'DrawingsLayer').zIndex = 350
-        }
-        catch {
-            // This just means that the layers aren't instantiated yet.
-        }
-    }
-});
+Hooks.on('diceSoNiceReady', function() {
+    game.dice3d.addSFXTrigger("fate4df", "Fate Roll", ["-4","-3","-2","-1","0","1","2","3","4"]);
+})
 
 Hooks.once('ready', async function () {
     //Convert any straggling ModularFate actors to fate-core-official actors.
@@ -325,6 +361,20 @@ Hooks.on('updateScene', (...args) => {
     game.system.apps["combat"].forEach(a=> {
         a.renderMe(args);
     })
+})
+
+Hooks.on('getSceneControlButtons', function(hudButtons)
+{
+    let hud = hudButtons.find(val => {return val.name == "token";})
+            if (hud && game.user.isGM){
+                hud.tools.push({
+                    name:"StuntDB",
+                    title:game.i18n.localize("fate-core-official.ViewTheStuntDatabase"),
+                    icon:"fas fa-book",
+                    onClick: ()=> {let sd = new StuntDB("none"); sd.render(true)},
+                    button:true
+                });
+            }
 })
 
 Hooks.once('init', async function () {
@@ -592,7 +642,7 @@ Hooks.once('init', async function () {
  
                 new Dialog({
                     title: game.i18n.localize("fate-core-official.ExportSettingsDialogTitle"), 
-                    content: `<div style="background-color:white; color:black;"><textarea rows="20" style="font-family:Montserrat; width:382px; background-color:white; border:1px solid lightsteelblue; color:black;" id="export_settings">${text}</textarea></div>`,
+                    content: `<div style="background-color:white; color:black;"><textarea rows="20" style="font-family:var(--fco-font-family); width:382px; background-color:white; border:1px solid var(--fco-foundry-interactable-color); color:black;" id="export_settings">${text}</textarea></div>`,
                     buttons: {
                     },
                 }).render(true);
@@ -741,6 +791,21 @@ game.settings.register("fate-core-official","freeStunts", {
         default:false
     })
 
+    game.settings.register("fate-core-official", "default_actor_permission", {
+        name: game.i18n.localize("fate-core-official.default_actor_permission"),
+        hint: game.i18n.localize("fate-core-official.default_actor_permission_hint"),
+        scope: "world",
+        config: true,
+        type: String,
+        choices:  {
+          NONE:"None",
+          LIMITED:"Limited",
+          OBSERVER:"Observer",
+          OWNER:"Owner"
+        },
+        default: "none"
+      });
+
     game.settings.register("fate-core-official","sheet_template", {
         name:game.i18n.localize("fate-core-official.DefaultSheetTemplateName"),
         hint:game.i18n.localize("fate-core-official.DefaultSheetTemplateHint"),
@@ -800,8 +865,148 @@ game.settings.register("fate-core-official","freeStunts", {
         scope:"world",
         config:"true",
         type:Boolean,
-        default:false
+        default:false,
+        onChange: () => {
+            let val = game.settings.get("fate-core-official","drawingsOnTop");
+            if (val) {
+                game.canvas.drawings.setParent(game.canvas.interface);
+                game.socket.emit("system.fate-core-official",{"drawingsOnTop":true})
+            }
+            else {
+                game.canvas.drawings.setParent(game.canvas.primary);
+                game.socket.emit("system.fate-core-official",{"drawingsOnTop":false})
+            }
+        }
     })
+
+    game.settings.register("fate-core-official","fco-aspects-pane-mheight", {
+        name:game.i18n.localize("fate-core-official.fcoAspectPaneHeight"),
+        hint:game.i18n.localize("fate-core-official.fcoAspectPaneHeightHint"),
+        config:false,
+        type:Number,
+        default:40,
+        scope: "user",
+        range: {             // If range is specified, the resulting setting will be a range slider
+            min: 10,
+            max: 90,
+            step: 5
+          },
+        onChange: () =>{
+            setupSheet();
+        }
+    })
+
+    game.settings.register("fate-core-official","fco-skills-pane-mheight", {
+        name:game.i18n.localize("fate-core-official.fcoSkillsPaneHeight"),
+        hint:game.i18n.localize("fate-core-official.fcoSkillsPaneHeightHint"),
+        config:false,
+        type:Number,
+        default:55,
+        scope: "user",
+        range: {             // If range is specified, the resulting setting will be a range slider
+            min: 10,
+            max: 90,
+            step: 5
+          },
+        onChange: () =>{
+            setupSheet();
+        }
+    })
+
+    // Register the menu to setup the user's character sheet preferences.
+    game.settings.registerMenu("fate-core-official", "CustomiseSheet", {
+        name: game.i18n.localize("fate-core-official.customiseSheet"),
+        label: game.i18n.localize("fate-core-official.Setup"),      // The text label used in the button
+        hint: game.i18n.localize("fate-core-official.customiseSheetHint"),
+        type: CustomiseSheet,   // A FormApplication subclass which should be created
+        restricted: false    // Restrict this submenu to gamemaster only?
+      });
+
+    // System font (also overrides default Foundry font for consistency unless next setting is false)
+
+    game.settings.register("fate-core-official", "fco-font-family", {
+       name: game.i18n.localize("fate-core-official.fontFamilyName"),
+       label:game.i18n.localize("fate-core-official.fontFamilyLabel"),
+       hint:game.i18n.localize("fate-core-official.fontFamilyHint"),
+       type:String,
+       default:CONFIG.fontFamilies.indexOf("Montserrat"),
+       restricted:false,
+       scope:"user",
+       config:true,
+       choices:CONFIG.fontFamilies,
+       onChange:() => {
+           setupFont();
+       }
+    });
+
+    game.settings.register("fate-core-official", "override-foundry-font", {
+        name: game.i18n.localize("fate-core-official.overrideFontName"),
+        label:game.i18n.localize("fate-core-official.overrideFontLabel"),
+        hint:game.i18n.localize("fate-core-official.overrideFontHint"),
+        type:Boolean,
+        default:false,
+        restricted:false,
+        scope:"user",
+        config:true,
+        onChange:() => {
+            setupFont();
+        }
+     });
+
+    game.settings.register("fate-core-official", "fco-notched-headers", {
+        name: game.i18n.localize("fate-core-official.notched-headers"),
+        label: game.i18n.localize("fate-core-official.notched-headers"),
+        hint: game.i18n.localize("fate-core-official.notched-headers-hint"),
+        type: Boolean,
+        default: false,
+        config: false,
+        scope: "user",
+        onChange: () =>{
+           setupSheet();
+        }
+    })
+
+    //Sheet header colour
+    game.settings.register("fate-core-official","sheetHeaderColour", {
+        name: game.i18n.localize("fate-core-official.sheetHeaderColour"),
+        hint:game.i18n.localize("fate-core-official.sheetHeaderColourHint"),
+        scope:"user",
+        config:false,
+        restricted:false,
+        type:String,
+        default:"#185CAB",
+        onChange: () => {
+            setupSheet();
+        }
+    })
+
+    //Sheet accent colour
+    game.settings.register("fate-core-official","sheetAccentColour", {
+        name: game.i18n.localize("fate-core-official.sheetAccentColour"),
+        hint:game.i18n.localize("fate-core-official.sheetAccentColourHint"),
+        scope:"user",
+        config:false,
+        restricted:false,
+        type:String,
+        default:"#6793c5",
+        onChange: () => {
+            setupSheet();
+        }
+    })
+
+    //Sheet label colour
+    game.settings.register("fate-core-official","sheetLabelColour", {
+        name: game.i18n.localize("fate-core-official.sheetLabelColour"),
+        hint:game.i18n.localize("fate-core-official.sheetLabelColourHint"),
+        scope:"user",
+        config:false,
+        restricted:false,
+        type:String,
+        default:"#FFFFFF",
+        onChange: () => {
+            setupSheet();
+        }
+    })     
 
     game.settings.register("fate-core-official","fu_actor_avatars", {
         name:"Use actor avatars instead of token avatars in Fate Utilities?",
@@ -838,8 +1043,14 @@ game.settings.register("fate-core-official","freeStunts", {
         default:"none"
     })
 
-    game.system.entityTypes.Item = ["Extra"];
-    game.system.entityTypes.Actor = ["fate-core-official","Thing","FateCoreOfficial", "ModularFate"];
+    if (isNewerVersion(game.version, '9.220')){
+        game.system.documentTypes.Item = ["Extra"];
+        game.system.documentTypes.Actor = ["fate-core-official","Thing","FateCoreOfficial", "ModularFate"];
+    } else {
+        game.system.entityTypes.Item = ["Extra"];
+        game.system.entityTypes.Actor = ["fate-core-official","Thing","FateCoreOfficial", "ModularFate"];
+    }
+    
 
     game.system.apps= {
         actor:[],
@@ -916,11 +1127,27 @@ game.settings.register("fate-core-official","freeStunts", {
         default:12
     });
 
+    game.settings.register("fate-core-official", "fu-ignore-list", {
+        name: game.i18n.localize("fate-core-official.fu-ignore-list-name"),
+        hint: game.i18n.localize("fate-core-official.fu-ignore-list-hint"),
+        scope: "world",
+        config: true,
+        type: String,
+        default:"",
+        onChange:() => {
+            for (let app in ui.windows){
+                if (ui.windows[app]?.options?.id == "FateUtilities"){
+                    ui.windows[app]?.render(false);
+                }
+            }
+        }
+    });
+
     game.settings.register("fate-core-official", "fuAspectLabelBorderAlpha", {
         name: game.i18n.localize("fate-core-official.aspectBorderAlpha"),
         hint: game.i18n.localize("fate-core-official.AspectBorderAlphaLabel"),
         scope: "world",
-        config: true,
+        config: false,
         type: Number,
         range: {
             min: 0,
@@ -934,7 +1161,7 @@ game.settings.register("fate-core-official","freeStunts", {
         name: game.i18n.localize("fate-core-official.aspectFillAlpha"),
         hint: game.i18n.localize("fate-core-official.AspectFillAlphaLabel"),
         scope: "world",
-        config: true,
+        config: false,
         type: Number,
         range: {
             min: 0,
@@ -1082,4 +1309,43 @@ Handlebars.registerHelper("hasBoxes", function(track) {
         return true;
     }
 });
+
+class CustomiseSheet extends FormApplication {
+    static get defaultOptions (){
+        const options = super.defaultOptions;
+        options.template = "systems/fate-core-official/templates/CustomiseSheet.html";
+        options.closeOnSubmit = true;
+        options.submitOnClose = false;
+        options.title = game.i18n.localize("fate-core-official.customiseSheet");
+        return options;
+    }
+
+    async _updateObject(event, formData){
+        await game.settings.set("fate-core-official", "fco-aspects-pane-mheight", formData.fco_aspects_panel_height);
+        await game.settings.set("fate-core-official", "fco-skills-pane-mheight", formData.fco_skills_panel_height);
+        await game.settings.set("fate-core-official", "sheetLabelColour", formData.sheet_label_colour);
+        await game.settings.set("fate-core-official", "sheetAccentColour", formData.sheet_accent_colour);
+        await game.settings.set("fate-core-official", "sheetHeaderColour", formData.sheet_header_colour);
+        await game.settings.set("fate-core-official", "fco-notched-headers", formData.use_notched);
+        this.close();
+    }
+
+    async getData(){
+        return {
+            sheetHeaderColour:game.settings.get("fate-core-official","sheetHeaderColour"),
+            sheetAccentColour:game.settings.get("fate-core-official","sheetAccentColour"),
+            sheetLabelColour:game.settings.get("fate-core-official","sheetLabelColour"),
+            notch:game.settings.get("fate-core-official","fco-notched-headers"),
+            aspectsHeight:game.settings.get("fate-core-official","fco-aspects-pane-mheight"),
+            skillsHeight:game.settings.get("fate-core-official","fco-skills-pane-mheight"),
+        }
+    }
+
+    async activateListeners(html){
+        super.activateListeners(html);
+        $('#save_sheet_settings').on('click', async event => {
+            this.submit();
+        })
+    }
+}
 

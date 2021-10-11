@@ -65,8 +65,7 @@
 .fate.window-app .window-content h3 {
   margin: 0;
   border: none;
-  font-family: "Montserrat", "Arial", sans-serif;
-  font-weight: 900;
+  font-family: var(--fco-font-family);
   text-transform: uppercase;
 }
 
@@ -98,23 +97,17 @@
 
 input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: inner-spin-button;
-  }
-
-button {
-  border-radius: 0;
-  font-family: "Montserrat", "Arial", sans-serif;
-  border: 2px solid black;
 }
 
-button:hover {
-  background: rgba(255, 255, 255, 0.2);
+body, button, label, select, input, textarea {
+  font-family:var(--fco-foundry-font-family);
 }
 
 #chat-log .message {
   border: 2px solid black;
   border-radius: 0;
   background: #c8c8c8;
-  font-family: "Montserrat", "Arial", sans-serif;
+  font-family: var(--fco-foundry-font-family);
 }
 #chat-log .message .message-header {
   color: black;
@@ -143,11 +136,11 @@ button:hover {
 }
 
 .fu_controlled {
-  background-color:lightsteelblue !important;
+  background-color:var(--fco-foundry-interactable-color) !important;
 }
 
 .fu_uncontrolled {
-  background-color:lightgrey !important;
+  background-color:var(--fco-foundry-interactable-color) !important;
 }
 
 .fu_button:hover {
@@ -296,6 +289,7 @@ button:hover {
 
 /* The container */
 .box {
+  font-family:"Montserrat";
   display: flex-row;
   float:left;
   position: relative;
@@ -312,6 +306,7 @@ button:hover {
 
 /* Create a custom checkbox */
 .checkmark {
+  font-family:"Montserrat";
   position: absolute;
   top: 0;
   left: 0;
@@ -325,12 +320,12 @@ button:hover {
 
 /* On mouse-over, add a grey background color */
 .box:hover input ~ .checkmark {
-  background-color: lightsteelblue;
+  background-color: var(--fco-foundry-interactable-color);
 }
 
 /* Create the checkmark/indicator (hidden when not checked) */
 .checkmark:after {
-  font-family:Montserrat;
+  font-family:"Montserrat";
   content: "X";
   position: absolute;
   top: 65%;
@@ -380,12 +375,12 @@ button:hover {
 
 /* On mouse-over, add a grey background color */
 .cdbox:hover input ~ .cdcheckmark {
-  background-color: lightsteelblue;
+  background-color: var(--fco-foundry-interactable-color);
 }
 
 /* Create the checkmark/indicator (hidden when not checked) */
 .cdcheckmark:after {
-  font-family:Montserrat;
+  font-family:"Montserrat";
   content: "X";
   position: absolute;
   top: 65%;
@@ -407,16 +402,16 @@ button:hover {
 
 .cs_box {
   background-color:white !important;
-  font-family:Montserrat !important;
+  font-family:var(--fco-font-family) !important;
   border-top:none !important;
   border-radius:0 !important;
   border-right:none !important;
   border-left:none !important;
-  border-bottom:1px solid lightsteelblue !important
+  border-bottom:1px solid var(--fco-foundry-interactable-color) !important
 }
 
 .cs_box:hover {
-  background-color: lightsteelblue !important;
+  background-color: var(--fco-foundry-interactable-color) !important;
 }
 
 .fu_aspect_box {
@@ -430,9 +425,9 @@ button:hover {
   padding:5px !important; 
   color:black !important; 
   background-color :white !important; 
-  font-family:Montserrat !important; 
+  font-family:var(--fco-font-family) !important; 
   border:none !important; 
-  border-bottom: 1px solid lightsteelblue !important
+  border-bottom: 1px solid var(--fco-foundry-interactable-color) !important
 }
 
 .aspect_box {
@@ -447,38 +442,51 @@ button:hover {
   padding:5px !important; 
   color:black !important; 
   background-color :white !important; 
-  font-family:Montserrat !important; 
+  font-family:var(--fco-font-family) !important; 
   border:none !important; 
-  border-bottom: 1px solid lightsteelblue !important
+  border-bottom: 1px solid var(--fco-foundry-interactable-color) !important
 }
 
 .aspect_box:hover {
-  background-color: lightsteelblue !important;
+  background-color: var(--fco-foundry-interactable-color) !important;
 }
 
 .fu_aspect_box:hover {
-  background-color: lightsteelblue !important;
+  background-color: var(--fco-foundry-interactable-color) !important;
 }
 
 .long_text {
   min-height:50px !important; 
   background-color:white !important;
-  font-family:Montserrat !important;
-  font-size:10pt
+  font-family:var(--fco-font-family) !important;
+  font-size:10pt;
+  overflow-y:auto;
 }
 
 .long_text_rich {
   min-height:50px !important; 
   background-color:white !important;
-  font-family:Montserrat !important;
+  font-family:var(--fco-font-family) !important;
   font-size:10pt;
   overflow-y:auto;
 }
 
 .long_text_rich:hover {
-  background-color: lightsteelblue !important;
+  background-color:var(--fco-foundry-interactable-color) !important;
 }
 
 span.fas.inactive {
   opacity: 0.5;
+}
+
+.fate-font {
+  font-family:"Fate";
+  font-style:normal;
+  font-size:1.5em;
+}
+
+.fate-glyph {
+  font-family:"Fate";
+  font-style:normal;
+  font-size:2.5em;
 }
